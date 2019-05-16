@@ -18,23 +18,25 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     @Autowired
     private OrdersMapper ordersMapper;
     @Override
-    public boolean getFlashSale(int goodsId, int userId, int sum) {
+    synchronized public boolean getFlashSale(int goodsId, int userId, int sum) {
         boolean result = false;
         Goods goods = goodsMapper.selectByPrimaryKey(goodsId);
-        //判断库存够不够
-        if(goods != null && goods.getSum() >= sum) {
-            goods.setSum(goods.getSum() - sum);
-            //更新商品库存
-            goodsMapper.updateByPrimaryKey(goods);
-            Orders orders = new Orders();
-            orders.setGoodsId(goodsId);
-            orders.setSum(sum);
-            orders.setUserId(userId);
-            orders.setCreateDate(new Date());
-            orders.setUpdateDate(orders.getCreateDate());
-            //插入订单记录
-            ordersMapper.insert(orders);
-            result = true;
+        if(goods != null) {
+           //判断库存够不够
+           if(goods.getSum() >= sum) {
+               goods.setSum(goods.getSum() - sum);
+               //更新商品库存
+               goodsMapper.updateByPrimaryKey(goods);
+               Orders orders = new Orders();
+               orders.setGoodsId(goodsId);
+               orders.setSum(sum);
+               orders.setUserId(userId);
+               orders.setCreateDate(new Date());
+               orders.setUpdateDate(orders.getCreateDate());
+               //插入订单记录
+               ordersMapper.insert(orders);
+               result = true;
+            }
         }
         return result;
     }
